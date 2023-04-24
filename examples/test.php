@@ -1,7 +1,5 @@
 <?php
 
-var_dump(hello_world("David"));
-
 class T {
     public function hello()
     {
@@ -11,9 +9,7 @@ class T {
 
 $t = new T();
 
-var_dump(take_obj($t)->hello());
-
-$tpl = Template::new("Liquid! {{num | minus: 2}}");
+$tpl = Template::new("Liquid! {{name}} {{age}} {{t.hello()}}");
 
 $vars = [
     'name' => 'David',
@@ -25,4 +21,4 @@ $vars->name = 'David';
 $vars->age = 18;
 $vars->t = $t;
 
-$tpl->render($vars);
+var_dump($tpl->render($vars));
