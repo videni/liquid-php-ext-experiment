@@ -1,3 +1,4 @@
+use super::zval::ZvalView;
 use ext_php_rs::convert::IntoZval;
 use ext_php_rs::types::{ZendHashTable, Zval};
 use liquid::model::{
@@ -5,7 +6,6 @@ use liquid::model::{
 };
 use liquid::{Object, ObjectView, ValueView};
 use std::fmt::{self, Debug};
-use super::zval::ZvalView;
 
 #[derive(Debug)]
 pub struct ZendHashTableView<'a>(pub &'a ZendHashTable);
@@ -20,12 +20,7 @@ impl<'a> ArrayView for ZendHashTableView<'a> {
     }
 
     fn values<'k>(&'k self) -> Box<dyn Iterator<Item = &'k dyn ValueView> + 'k> {
-        let values = self
-        .0
-        .values()
-        .map(|v| {
-            convert_value(v)
-        });
+        let values = self.0.values().map(|v| convert_value(v));
 
         Box::new(values)
     }
@@ -41,10 +36,7 @@ impl<'a> ArrayView for ZendHashTableView<'a> {
     }
 
     fn first(&self) -> Option<&dyn ValueView> {
-        self
-        .0
-        .get_index(0)
-        .and_then(|v|Some(convert_value(v)))
+        self.0.get_index(0).and_then(|v| Some(convert_value(v)))
     }
 
     fn last(&self) -> Option<&dyn ValueView> {
@@ -104,10 +96,10 @@ impl<'a> ValueView for ZendHashTableView<'a> {
 
     fn to_value(&self) -> Value {
         let values = self
-        .0
-        .iter()
-        .map(|(_, _, value)| ZvalView(value).to_value())
-        .collect();
+            .0
+            .iter()
+            .map(|(_, _, value)| ZvalView(value).to_value())
+            .collect();
 
         Value::Array(values)
     }
@@ -121,11 +113,10 @@ impl<'a> Iterator for ZendHashTableView<'a> {
     type Item = (u64, Option<String>, ZvalView<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self
-        .0
-        .iter()
-        .map(|(index, key, value)| (index, key, ZvalView(value)))
-        .next()
+        self.0
+            .iter()
+            .map(|(index, key, value)| (index, key, ZvalView(value)))
+            .next()
     }
 
     fn count(self) -> usize

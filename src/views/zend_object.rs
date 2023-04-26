@@ -1,3 +1,4 @@
+use super::zval::ZvalView;
 use ext_php_rs::convert::{FromZval, IntoZval};
 use ext_php_rs::ffi::{_zval_struct, zend_throw_exception_ex};
 use ext_php_rs::types::{ZendObject, Zval};
@@ -6,7 +7,6 @@ use liquid::model::{
 };
 use liquid::{Object, ObjectView, ValueView};
 use std::fmt::{self, Debug};
-use super::zval::ZvalView;
 
 #[derive(Debug)]
 pub struct ZendObjectView<'a>(pub &'a ZendObject);
@@ -33,7 +33,7 @@ impl<'a> liquid::ValueView for ZendObjectView<'a> {
     fn query_state(&self, state: liquid::model::State) -> bool {
         true
     }
-    
+
     fn as_object(&self) -> Option<&dyn ObjectView> {
         Some(self)
     }
@@ -44,14 +44,14 @@ impl<'a> liquid::ValueView for ZendObjectView<'a> {
     }
 
     fn to_value(&self) -> Value {
-        let properties = self
-            .0
-            .get_properties()
-            .unwrap();
-            
+        let properties = self.0.get_properties().unwrap();
+
         let mut object = Object::new();
         for (_, key, value) in properties.iter() {
-            object.insert(KString::from_string(key.unwrap()), ZvalView(value).to_value() );
+            object.insert(
+                KString::from_string(key.unwrap()),
+                ZvalView(value).to_value(),
+            );
         }
 
         Value::Object(object)
@@ -64,50 +64,35 @@ impl<'a> liquid::ObjectView for ZendObjectView<'a> {
     }
 
     fn size(&self) -> i64 {
-       self.0.get_properties().unwrap().len() as i64
+        self.0.get_properties().unwrap().len() as i64
     }
 
     fn keys(&self) -> Box<(dyn Iterator<Item = KStringCow<'_>> + '_)> {
-        let ht = self
-            .0
-            .get_properties()
-            .unwrap();
-        
-        let keys = ht
-            .iter()
-            .map(|s| {
-                if ht.has_numerical_keys() {
-                    KStringCow::from_string(s.1.unwrap())
-                } else {
-                    KStringCow::from_string(s.0.to_string())
-                }
-            });
-           
+        let ht = self.0.get_properties().unwrap();
+
+        let keys = ht.iter().map(|s| {
+            if ht.has_numerical_keys() {
+                KStringCow::from_string(s.1.unwrap())
+            } else {
+                KStringCow::from_string(s.0.to_string())
+            }
+        });
+
         Box::new(keys)
     }
 
     fn values<'k>(&'k self) -> Box<dyn Iterator<Item = &'k dyn ValueView> + 'k> {
-        let values = self
-            .0
-            .get_properties()
-            .unwrap()
-            .iter()
-            .map(|(_, _, v)| {
-                let z = Box::new(ZvalView(v));
+        let values = self.0.get_properties().unwrap().iter().map(|(_, _, v)| {
+            let z = Box::new(ZvalView(v));
 
-                return Box::leak(z) as &dyn ValueView;
-            });
+            return Box::leak(z) as &dyn ValueView;
+        });
 
         Box::new(values)
     }
 
     fn iter(&self) -> Box<(dyn Iterator<Item = (KStringCow<'_>, &'_ (dyn ValueView + '_))> + '_)> {
-        let properties = self
-        .0
-        .get_properties()
-        .unwrap()
-        .iter()
-        .map(|(_, key, v)| {
+        let properties = self.0.get_properties().unwrap().iter().map(|(_, key, v)| {
             let key = KStringCow::from_string(key.unwrap());
             let value = convert_value(v);
 
@@ -126,9 +111,7 @@ impl<'a> liquid::ObjectView for ZendObjectView<'a> {
     fn get(&self, key: &str) -> std::option::Option<&'_ (dyn ValueView + '_)> {
         let properties = self.0.get_properties().unwrap();
 
-        properties
-            .get(key)
-            .map(|s| convert_value(s))
+        properties.get(key).map(|s| convert_value(s))
     }
 }
 

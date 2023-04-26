@@ -1,5 +1,12 @@
 
+liquid-php
+=========
+
+An experiment to run [liquid-rust](https://crates.io/crates/liquid) as a PHP native extension.
+
+# Usage
+
 ```
-php -d extension=./target/debug/libhello_world.so examples/test.php
-cargo run --example test_liquid
+cargo build
+php -d extension=./target/debug/libliquid_php.so examples/basic.php
 ```

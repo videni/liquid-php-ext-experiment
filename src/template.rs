@@ -2,7 +2,7 @@ use crate::views::zend_hash_table::ZendHashTableView;
 use crate::views::zend_object::ZendObjectView;
 use crate::views::zval::ZvalView;
 use ext_php_rs::ffi::zend_throw_exception_ex;
-use ext_php_rs::types::{Zval, ZendHashTable, ZendObject};
+use ext_php_rs::types::{ZendHashTable, ZendObject, Zval};
 use ext_php_rs::{prelude::*, types::ZendClassObject};
 
 #[php_class]

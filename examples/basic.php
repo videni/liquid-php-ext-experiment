@@ -9,7 +9,7 @@ class T {
 
 $t = new T();
 
-$tpl = Template::new("Liquid! {{name}} {{age}} {{t.hello()}}");
+$tpl = Template::new("Liquid! {{name}} {{age}} {{t.hello}}");
 
 $vars = [
     'name' => 'David',

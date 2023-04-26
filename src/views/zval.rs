@@ -1,10 +1,11 @@
-use ext_php_rs::flags::DataType;
-use ext_php_rs::types::{Zval, ZendHashTable};
-use liquid::model::{
-    ArrayView, DisplayCow, KString, KStringCow, ObjectRender, ObjectSource, State, Value, ScalarCow, Scalar,
-};
-use liquid::{ValueView, ObjectView, Object};
 use core::fmt;
+use ext_php_rs::flags::DataType;
+use ext_php_rs::types::{ZendHashTable, Zval};
+use liquid::model::{
+    ArrayView, DisplayCow, KString, KStringCow, ObjectRender, ObjectSource, Scalar, ScalarCow,
+    State, Value,
+};
+use liquid::{Object, ObjectView, ValueView};
 use std::fmt::Debug;
 
 use super::zend_hash_table::ZendHashTableView;
@@ -23,16 +24,16 @@ impl<'a> ValueView for ZvalView<'a> {
         match val_type {
             DataType::String => {
                 return Some(Scalar::new(self.0.string().unwrap()));
-            },
+            }
             DataType::Bool => {
                 return Some(Scalar::new::<bool>(self.0.bool().unwrap().into()));
-            },
+            }
             DataType::Long => {
                 return Some(Scalar::new::<i64>(self.0.long().unwrap().into()));
-            },
+            }
             DataType::Double => {
                 return Some(Scalar::new::<f64>(self.0.double().unwrap().into()));
-            },
+            }
             _ => {
                 return None;
             }
@@ -50,9 +51,7 @@ impl<'a> ValueView for ZvalView<'a> {
     }
 
     fn as_array(&self) -> Option<&dyn ArrayView> {
-       self.0
-        .array()
-        .and_then(|z|Some(convert_value(z)))
+        self.0.array().and_then(|z| Some(convert_value(z)))
     }
 
     fn is_array(&self) -> bool {
@@ -93,31 +92,23 @@ impl<'a> ValueView for ZvalView<'a> {
         match val_type {
             DataType::Array => {
                 return self.as_array().unwrap().to_value();
-            },
+            }
             DataType::String => {
                 return Value::Scalar(self.0.string().unwrap().into());
-            },
-            DataType::Bool => {
-                return  Value::Scalar(self.0.bool().unwrap().into())
-            },
-            DataType::Long => {
-                return Value::Scalar(self.0.long().unwrap().into())
-            },
+            }
+            DataType::Bool => return Value::Scalar(self.0.bool().unwrap().into()),
+            DataType::Long => return Value::Scalar(self.0.long().unwrap().into()),
             DataType::Double => {
                 return Value::Scalar(self.0.double().unwrap().into());
-            },
+            }
             DataType::Object(_) => {
-                let zend_object = self
-                .0
-                .object()
-                .unwrap();
+                let zend_object = self.0.object().unwrap();
 
-                let object: Object = ZendObjectView::from(zend_object)
-                    .into();
+                let object: Object = ZendObjectView::from(zend_object).into();
 
                 return Value::Object(object);
-            },
-            _  => {
+            }
+            _ => {
                 // TODO: handle resource, callable, reference
                 Value::Nil
             }
@@ -133,8 +124,7 @@ fn convert_value(z: &ZendHashTable) -> &dyn ArrayView {
 
 pub struct ZvalViewRender<'a>(&'a ZvalView<'a>);
 
-impl<'a> fmt::Display for ZvalViewRender<'a>
-{
+impl<'a> fmt::Display for ZvalViewRender<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.0)?;
 

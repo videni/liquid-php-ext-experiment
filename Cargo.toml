@@ -1,5 +1,5 @@
 [package]
-name = "hello_world"
+name = "liquid-php"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,7 +10,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ext-php-rs = "*"
-liquid = "0.26.1"
+liquid = { version="0.26.1"}
+# liquid-lib = { version = "^0.26.1", features=[ "stdlib", "shopify", "extra"] }
 
 [profile.release]
 strip = "debuginfo"
